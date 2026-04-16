@@ -45,31 +45,39 @@
       color: white;
     }
     .logo span { color: var(--lime); }
+    .nav-links {
+      display: flex;
+      gap: 1.5rem;
+    }
     .nav-links a {
       color: #ccc;
       text-decoration: none;
-      margin-left: 2rem;
       font-weight: 500;
+      font-size: 1rem;
     }
     .nav-links a:hover { color: var(--lime); }
 
     /* Hero */
     .hero {
-      height: 100vh;
+      min-height: 100vh;
       display: flex;
       align-items: center;
-      background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.8)), url('https://source.unsplash.com/random/1920x1080/?fashion,africa') center/cover no-repeat;
+      background: linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.85)), url('https://source.unsplash.com/random/1920x1080/?fashion,africa') center/cover no-repeat;
       text-align: center;
+      padding: 120px 20px 80px;
     }
     .hero-content h1 {
-      font-size: 4.5rem;
+      font-size: 3.2rem;
       margin-bottom: 1rem;
       line-height: 1.1;
     }
     .hero-content .tagline {
-      font-size: 1.6rem;
+      font-size: 1.35rem;
       color: #ddd;
       margin-bottom: 2rem;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
     }
     .btn {
       display: inline-block;
@@ -80,7 +88,7 @@
       font-weight: 700;
       font-size: 1.1rem;
       text-decoration: none;
-      margin: 10px;
+      margin: 10px 5px;
       transition: all 0.3s;
     }
     .btn:hover {
@@ -94,9 +102,9 @@
     }
 
     /* Sections */
-    section { padding: 100px 0; }
+    section { padding: 80px 0; }
     h2 {
-      font-size: 3rem;
+      font-size: 2.5rem;
       text-align: center;
       margin-bottom: 3rem;
       color: white;
@@ -105,25 +113,40 @@
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 2rem;
+      grid-template-columns: 1fr;
+      gap: 1.8rem;
     }
+    @media (min-width: 768px) {
+      .grid { grid-template-columns: repeat(2, 1fr); }
+      .hero-content h1 { font-size: 4.5rem; }
+      .hero-content .tagline { font-size: 1.6rem; }
+      section { padding: 100px 0; }
+      h2 { font-size: 3rem; }
+    }
+    @media (min-width: 1024px) {
+      .grid { grid-template-columns: repeat(4, 1fr); }
+    }
+
     .card {
       background: #111;
-      padding: 2rem;
+      padding: 2rem 1.5rem;
       border-radius: 20px;
       border: 1px solid #222;
+      text-align: center;
       transition: transform 0.3s;
     }
-    .card:hover { transform: translateY(-10px); }
-    .highlight { color: var(--lime); }
+    .card:hover { transform: translateY(-8px); }
 
     /* SVG Icon Style */
     .icon {
-      width: 48px;
-      height: 48px;
-      margin-bottom: 1rem;
-      fill: var(--lime);
+      width: 56px;
+      height: 56px;
+      margin-bottom: 1.2rem;
+      fill: none;
+      stroke: var(--lime);
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
     }
 
     /* Demo Section */
@@ -135,21 +158,21 @@
       background: #111;
       border: 12px solid #222;
       border-radius: 40px;
-      max-width: 380px;
+      max-width: 340px;
       margin: 2rem auto;
-      padding: 20px 10px;
+      padding: 20px 15px;
       box-shadow: 0 20px 40px rgba(0,0,0,0.6);
     }
     .mockup-header {
       background: #1a1a1a;
-      padding: 10px;
+      padding: 12px;
       border-radius: 20px;
-      margin-bottom: 15px;
+      margin-bottom: 20px;
       text-align: left;
-      font-size: 0.9rem;
+      font-size: 0.95rem;
     }
     .drip-level {
-      font-size: 4rem;
+      font-size: 3.8rem;
       font-weight: 900;
       color: var(--lime);
       margin: 1rem 0;
@@ -158,7 +181,7 @@
     /* Footer */
     footer {
       background: #050505;
-      padding: 60px 0 30px;
+      padding: 60px 20px 40px;
       text-align: center;
       border-top: 1px solid #222;
     }
@@ -178,7 +201,7 @@
           <a href="#problem">Problem</a>
           <a href="#solution">Solution</a>
           <a href="#demo">Demo</a>
-          <a href="#waitlist">Join Waitlist</a>
+          <a href="#waitlist">Join</a>
         </div>
       </nav>
     </div>
@@ -191,9 +214,9 @@
       <p class="tagline">Your AI personal stylist in your pocket — built for real African life, weather & occasions.</p>
       <div>
         <a href="#waitlist" class="btn">Get Early Access</a>
-        <a href="#demo" class="btn btn-secondary">Watch Demo</a>
+        <a href="#demo" class="btn btn-secondary">See Demo</a>
       </div>
-      <p style="margin-top: 3rem; color: #888;">Now launching in Zambia 🇿🇲 • Coming to Africa</p>
+      <p style="margin-top: 3rem; color: #888; font-size: 1rem;">Now launching in Zambia 🇿🇲 • Coming to Africa</p>
     </div>
   </section>
 
@@ -203,17 +226,17 @@
       <h2>The Daily Struggle</h2>
       <div class="grid">
         <div class="card">
-          <svg class="icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.59 2 12.253c0 4.537 2.876 8.39 6.84 9.74.5.092.682-.217.682-.482 0-.237-.01-1.03-.014-1.87-2.782.605-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.607.069-.607 1.004.07 1.532 1.032 1.532 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.092.39-1.986 1.03-2.684-.103-.253-.447-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.91-1.296 2.75-1.026 2.75-1.026.546 1.378.202 2.397.1 2.65.64.698 1.03 1.592 1.03 2.684 0 3.842-2.34 4.687-4.567 4.935.359.31.678.92.678 1.855 0 1.338-.012 2.415-.012 2.743 0 .267.18.58.688.482 3.96-1.35 6.83-5.203 6.83-9.74C22 6.59 17.52 2 12 2z"/></svg>
+          <svg class="icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.59 2 12.25c0 4.54 2.88 8.39 6.84 9.74.5.09.68-.22.68-.48 0-.24-.01-1.03-.01-1.87-2.78.6-3.37-1.34-3.37-1.34-.45-1.16-1.11-1.46-1.11-1.46-.91-.62.07-.61.07-.61 1 .07 1.53 1.03 1.53 1.03.89 1.53 2.34 1.09 2.91.83.09-.65.35-1.09.64-1.34-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.99 1.03-2.69-.1-.25-.45-1.27.1-2.65 0 0 .84-.27 2.75 1.03A9.56 9.56 0 0112 6.84c.85 0 1.71.11 2.51.34 1.91-1.3 2.75-1.03 2.75-1.03.55 1.38.2 2.4.1 2.65.64.7 1.03 1.6 1.03 2.69 0 3.84-2.34 4.69-4.57 4.94.36.31.68.92.68 1.85 0 1.34-.01 2.42-.01 2.75 0 .27.18.58.69.48A10.25 10.25 0 0022 12.25C22 6.59 17.52 2 12 2z"/></svg>
           <h3>What do I wear today?</h3>
           <p>Every morning the same stress — does it fit the occasion? Will I be underdressed or overdressed?</p>
         </div>
         <div class="card">
-          <svg class="icon" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
           <h3>Generic apps don’t get us</h3>
           <p>Too Western. Too basic. Zero understanding of Zambian weather, church events, campus life, or local style.</p>
         </div>
         <div class="card">
-          <svg class="icon" viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.4 0-8-3.6-8-8s3.6-8 8-8 8 3.6 8 8-3.6 8-8 8z"/><path d="M12 6v6l4 2"/></svg>
+          <svg class="icon" viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2z"/><path d="M12 6v6l4 2"/></svg>
           <h3>Matching is hard</h3>
           <p>Body type, personal taste, cultural context — most tools ignore all of it.</p>
         </div>
@@ -227,22 +250,22 @@
       <h2>DripDay is Your Pocket Stylist</h2>
       <div class="grid">
         <div class="card">
-          <svg class="icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.59 2 12.253c0 4.537 2.876 8.39 6.84 9.74.5.092.682-.217.682-.482 0-.237-.01-1.03-.014-1.87-2.782.605-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.607.069-.607 1.004.07 1.532 1.032 1.532 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.092.39-1.986 1.03-2.684-.103-.253-.447-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.91-1.296 2.75-1.026 2.75-1.026.546 1.378.202 2.397.1 2.65.64.698 1.03 1.592 1.03 2.684 0 3.842-2.34 4.687-4.567 4.935.359.31.678.92.678 1.855 0 1.338-.012 2.415-.012 2.743 0 .267.18.58.688.482 3.96-1.35 6.83-5.203 6.83-9.74C22 6.59 17.52 2 12 2z"/></svg>
+          <svg class="icon" viewBox="0 0 24 24"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16"/><path d="M12 9v6"/><path d="M9 12h6"/></svg>
           <h3>Occasion Engine</h3>
           <p>Church, date, UNZA lecture, wedding, office — we understand the vibe.</p>
         </div>
         <div class="card">
-          <svg class="icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.59 2 12.253c0 4.537 2.876 8.39 6.84 9.74.5.092.682-.217.682-.482 0-.237-.01-1.03-.014-1.87-2.782.605-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.607.069-.607 1.004.07 1.532 1.032 1.532 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.092.39-1.986 1.03-2.684-.103-.253-.447-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.91-1.296 2.75-1.026 2.75-1.026.546 1.378.202 2.397.1 2.65.64.698 1.03 1.592 1.03 2.684 0 3.842-2.34 4.687-4.567 4.935.359.31.678.92.678 1.855 0 1.338-.012 2.415-.012 2.743 0 .267.18.58.688.482 3.96-1.35 6.83-5.203 6.83-9.74C22 6.59 17.52 2 12 2z"/></svg>
+          <svg class="icon" viewBox="0 0 24 24"><path d="M12 2v2"/><path d="M12 20v2"/><path d="M4.93 4.93l1.41 1.41"/><path d="M17.66 17.66l1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="M4.93 19.07l1.41-1.41"/><path d="M17.66 6.34l1.41-1.41"/></svg>
           <h3>Weather-Aware</h3>
           <p>Lusaka rains? Copperbelt dust? We suggest the right fabrics and layers.</p>
         </div>
         <div class="card">
-          <svg class="icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.59 2 12.253c0 4.537 2.876 8.39 6.84 9.74.5.092.682-.217.682-.482 0-.237-.01-1.03-.014-1.87-2.782.605-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.607.069-.607 1.004.07 1.532 1.032 1.532 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.092.39-1.986 1.03-2.684-.103-.253-.447-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.91-1.296 2.75-1.026 2.75-1.026.546 1.378.202 2.397.1 2.65.64.698 1.03 1.592 1.03 2.684 0 3.842-2.34 4.687-4.567 4.935.359.31.678.92.678 1.855 0 1.338-.012 2.415-.012 2.743 0 .267.18.58.688.482 3.96-1.35 6.83-5.203 6.83-9.74C22 6.59 17.52 2 12 2z"/></svg>
+          <svg class="icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.59 2 12.25c0 4.54 2.88 8.39 6.84 9.74.5.09.68-.22.68-.48 0-.24-.01-1.03-.01-1.87-2.78.6-3.37-1.34-3.37-1.34-.45-1.16-1.11-1.46-1.11-1.46-.91-.62.07-.61.07-.61 1 .07 1.53 1.03 1.53 1.03.89 1.53 2.34 1.09 2.91.83.09-.65.35-1.09.64-1.34-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.99 1.03-2.69-.1-.25-.45-1.27.1-2.65 0 0 .84-.27 2.75 1.03A9.56 9.56 0 0112 6.84c.85 0 1.71.11 2.51.34 1.91-1.3 2.75-1.03 2.75-1.03.55 1.38.2 2.4.1 2.65.64.7 1.03 1.6 1.03 2.69 0 3.84-2.34 4.69-4.57 4.94.36.31.68.92.68 1.85 0 1.34-.01 2.42-.01 2.75 0 .27.18.58.69.48A10.25 10.25 0 0022 12.25C22 6.59 17.52 2 12 2z"/></svg>
           <h3>Learns Your Style</h3>
           <p>The more you use it, the better it gets — truly personal.</p>
         </div>
         <div class="card">
-          <svg class="icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.59 2 12.253c0 4.537 2.876 8.39 6.84 9.74.5.092.682-.217.682-.482 0-.237-.01-1.03-.014-1.87-2.782.605-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.607.069-.607 1.004.07 1.532 1.032 1.532 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.092.39-1.986 1.03-2.684-.103-.253-.447-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.91-1.296 2.75-1.026 2.75-1.026.546 1.378.202 2.397.1 2.65.64.698 1.03 1.592 1.03 2.684 0 3.842-2.34 4.687-4.567 4.935.359.31.678.92.678 1.855 0 1.338-.012 2.415-.012 2.743 0 .267.18.58.688.482 3.96-1.35 6.83-5.203 6.83-9.74C22 6.59 17.52 2 12 2z"/></svg>
+          <svg class="icon" viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1v-5m10-10l2 2m-2-2v10a1 1 0 01-1 1v-5"/></svg>
           <h3>Built for Africa</h3>
           <p>Local trends, cultural sensitivity, and real-life situations first.</p>
         </div>
@@ -254,35 +277,35 @@
   <section id="demo" class="demo">
     <div class="container">
       <h2>See DripDay in Action</h2>
-      <p style="text-align:center; max-width:600px; margin:0 auto 2rem;">Today in Lusaka • 28°C • Partly Cloudy • Campus Day</p>
+      <p style="text-align:center; max-width:600px; margin:0 auto 2rem; font-size:1.05rem;">Today in Lusaka • 28°C • Partly Cloudy • Campus Day</p>
       
       <div class="mockup">
         <div class="mockup-header">
-          <strong>Today's Drip</strong> • <span style="color:var(--lime)">Drip Level 🔥🔥🔥</span>
+          <strong>Today's Drip</strong> • <span style="color:var(--lime)">Drip Level</span>
         </div>
-        <div style="font-size:5rem; margin:20px 0;">👕🩳👟</div>
+        <div style="font-size:4.5rem; margin:25px 0;">👕🩳👟</div>
         <div class="drip-level">92</div>
         <p><strong>Clean Casual Campus Look</strong></p>
-        <p style="font-size:0.95rem; color:#aaa;">Light blue button-up + black chinos + fresh sneakers.<br>Perfect for lectures + afternoon hangouts.</p>
-        <button style="margin-top:15px; background:var(--lime); color:black; border:none; padding:10px 24px; border-radius:30px; font-weight:bold;">Refresh Drip</button>
+        <p style="font-size:0.95rem; color:#aaa; margin-top:8px;">Light blue button-up + black chinos + fresh sneakers.<br>Perfect for lectures + afternoon hangouts.</p>
+        <button style="margin-top:20px; background:var(--lime); color:black; border:none; padding:12px 28px; border-radius:30px; font-weight:bold; font-size:1rem;">Refresh Drip</button>
       </div>
 
-      <p style="margin-top:2rem; color:#888;">Occasion selector • Closet integration • Emergency button • Social Drip Check coming soon</p>
+      <p style="margin-top:2.5rem; color:#888;">Occasion selector • Closet integration • Emergency button • Social Drip Check coming soon</p>
     </div>
   </section>
 
-  <!-- Waitlist / CTA -->
-  <section id="waitlist" style="background:var(--gray); text-align:center; padding:120px 20px;">
+  <!-- Waitlist -->
+  <section id="waitlist" style="background:var(--gray); text-align:center; padding:100px 20px;">
     <div class="container">
       <h2>Be the first to drip smarter</h2>
-      <p style="font-size:1.3rem; max-width:600px; margin:1rem auto;">Join the waitlist for early access in Zambia. Students & young professionals get priority.</p>
+      <p style="font-size:1.25rem; max-width:600px; margin:1.2rem auto;">Join the waitlist for early access in Zambia. Students & young professionals get priority.</p>
       
-      <form style="max-width:420px; margin:2rem auto; display:flex; gap:10px;">
-        <input type="email" placeholder="your@email.com" style="flex:1; padding:16px; border-radius:50px; border:none; font-size:1.1rem;">
-        <button type="submit" class="btn" style="padding:16px 32px;">Join Waitlist</button>
+      <form style="max-width:420px; margin:2rem auto; display:flex; flex-direction:column; gap:12px; align-items:center;">
+        <input type="email" placeholder="your@email.com" style="width:100%; padding:16px; border-radius:50px; border:none; font-size:1.05rem; max-width:360px;">
+        <button type="submit" class="btn" style="width:100%; max-width:360px; padding:16px;">Join Waitlist</button>
       </form>
       
-      <p style="color:#666; margin-top:1rem;">K30/month when we launch • Cancel anytime</p>
+      <p style="color:#666; margin-top:1.5rem;">K30/month when we launch • Cancel anytime</p>
     </div>
   </section>
 
@@ -294,7 +317,7 @@
       </div>
       <p>“Because how you show up matters.”</p>
       <p style="margin-top:2rem; color:#555;">© 2026 DripDay • Made for Zambia, built for Africa</p>
-      <p style="color:#444; font-size:0.9rem; margin-top:1rem;">Not affiliated with any existing apps • All rights reserved</p>
+      <p style="color:#444; font-size:0.9rem; margin-top:1rem;">All rights reserved</p>
     </div>
   </footer>
 
