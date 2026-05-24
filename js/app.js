@@ -45,13 +45,15 @@ const Icons = {
   checkCircle: `<svg class="svg-icon" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`,
   xCircle: `<svg class="svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`,
   messageCircle: `<svg class="svg-icon" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>`,
+  download: `<svg class="svg-icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`,
 };
 
-// ===== DATA STORE =====
+// ===== DATA STORE (with JSONBin.io cloud sync) =====
 const Store = {
   _data: {},
 
   init() {
+    // Load from localStorage first
     const saved = localStorage.getItem('dripday_data');
     if (saved) {
       try { this._data = JSON.parse(saved); } catch(e) { this._data = {}; }
@@ -59,10 +61,40 @@ const Store = {
     if (!this._data.profile) this._data.profile = null;
     if (!this._data.wardrobe) this._data.wardrobe = [];
     if (!this._data.history) this._data.history = [];
+
+    // Initialize Database module and attempt cloud sync
+    if (typeof Database !== 'undefined') {
+      Database.init();
+      if (Database.isConfigured) {
+        this.syncFromCloud();
+      }
+    }
+  },
+
+  async syncFromCloud() {
+    if (typeof Database === 'undefined' || !Database.isConfigured) return;
+    try {
+      const synced = await Database.syncFromCloud();
+      if (synced) {
+        // Reload data after sync
+        const saved = localStorage.getItem('dripday_data');
+        if (saved) {
+          try { this._data = JSON.parse(saved); } catch(e) { /* keep local */ }
+        }
+      }
+    } catch(e) {
+      console.warn('[Store] Cloud sync failed:', e);
+    }
   },
 
   save() {
+    this._data._lastModified = Date.now();
     localStorage.setItem('dripday_data', JSON.stringify(this._data));
+
+    // Attempt cloud save if configured
+    if (typeof Database !== 'undefined' && Database.isConfigured) {
+      Database.saveToCloud(this._data).catch(() => {});
+    }
   },
 
   get profile() { return this._data.profile; },
@@ -123,26 +155,13 @@ const Occasions = [
 ];
 
 const ColorMap = {
-  'black': '#1a1a1a',
-  'white': '#f5f5f5',
-  'red': '#e53e3e',
-  'blue': '#3182ce',
-  'navy': '#2a4365',
-  'green': '#38a169',
-  'yellow': '#ecc94b',
-  'brown': '#8b6f47',
-  'gray': '#718096',
-  'pink': '#ed64a6',
-  'purple': '#805ad5',
-  'orange': '#dd6b20',
-  'beige': '#c4a882',
-  'khaki': '#b8a960',
-  'olive': '#6b8e23',
-  'cream': '#f5f0e1',
-  'maroon': '#800020',
-  'teal': '#319795',
-  'coral': '#fc8181',
-  'denim': '#4a6fa5',
+  'black': '#1a1a1a', 'white': '#f5f5f5', 'red': '#e53e3e',
+  'blue': '#3182ce', 'navy': '#2a4365', 'green': '#38a169',
+  'yellow': '#ecc94b', 'brown': '#8b6f47', 'gray': '#718096',
+  'pink': '#ed64a6', 'purple': '#805ad5', 'orange': '#dd6b20',
+  'beige': '#c4a882', 'khaki': '#b8a960', 'olive': '#6b8e23',
+  'cream': '#f5f0e1', 'maroon': '#800020', 'teal': '#319795',
+  'coral': '#fc8181', 'denim': '#4a6fa5',
 };
 
 // ===== AI RECOMMENDATION ENGINE =====
@@ -160,19 +179,15 @@ const AI = {
 
   buildOutfit(occasion, weather, wardrobe) {
     const occasionNeeds = this.getOccasionNeeds(occasion);
-    const weatherMods = this.getWeatherModifiers(weather);
     const outfit = {};
 
-    // For each needed category, find the best match
     for (const need of occasionNeeds) {
       const items = wardrobe.filter(c => c.category === need.category);
       if (items.length > 0) {
-        // Score each item for this occasion
         const scored = items.map(item => ({
           ...item,
           matchScore: this.scoreItemForOccasion(item, occasion, weather, need)
         })).sort((a, b) => b.matchScore - a.matchScore);
-
         outfit[need.category] = scored[0];
       }
     }
@@ -262,12 +277,10 @@ const AI = {
   },
 
   scoreItemForOccasion(item, occasion, weather, need) {
-    let score = 50 + Math.random() * 20; // base score with some variance
+    let score = 50 + Math.random() * 20;
 
-    // Boost by importance
     score += need.importance * 15;
 
-    // Color/formality matching for occasion
     const formalOccasions = ['work', 'interview', 'church', 'wedding'];
     const casualOccasions = ['casual', 'campus', 'gym', 'outdoor'];
     const trendyOccasions = ['date', 'party'];
@@ -280,7 +293,6 @@ const AI = {
       if (trendyOccasions.includes(occasion) && item.formality === 'smart-casual') score += 15;
     }
 
-    // Tags matching
     if (item.tags) {
       const occasionTags = {
         casual: ['casual', 'everyday', 'comfortable'],
@@ -299,7 +311,6 @@ const AI = {
       score += matchCount * 12;
     }
 
-    // Weather considerations
     if (weather === 'hot' && item.material && ['linen', 'cotton', 'light'].includes(item.material)) score += 10;
     if (weather === 'cold' && item.material && ['wool', 'thick', 'fleece'].includes(item.material)) score += 10;
     if (weather === 'rainy' && item.category === 'shoes' && item.tags && item.tags.includes('waterproof')) score += 15;
@@ -388,11 +399,85 @@ const App = {
   currentWeather: null,
   awaitingOccasion: true,
   uploadImageData: null,
+  onboardingImages: [],
+  onboardingStep: 0,
+  _onboardingName: '',
+  _onboardingStyle: '',
+  _onboardingGender: '',
+
+  // PWA install
+  _deferredPrompt: null,
+  _installDismissed: false,
 
   init() {
     Store.init();
     this.bindEvents();
+    this.registerServiceWorker();
+    this.setupInstallPrompt();
     this.checkAuth();
+  },
+
+  // ===== SERVICE WORKER REGISTRATION =====
+  async registerServiceWorker() {
+    if ('serviceWorker' in navigator) {
+      try {
+        const reg = await navigator.serviceWorker.register('sw.js');
+        console.log('[App] Service Worker registered:', reg.scope);
+      } catch (err) {
+        console.warn('[App] Service Worker registration failed:', err);
+      }
+    }
+  },
+
+  // ===== PWA INSTALL PROMPT =====
+  setupInstallPrompt() {
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      this._deferredPrompt = e;
+
+      // Show install banner after 5 seconds if not dismissed
+      if (!this._installDismissed && !window.matchMedia('(display-mode: standalone)').matches) {
+        setTimeout(() => {
+          const banner = document.getElementById('install-banner');
+          if (banner && Store.isLoggedIn()) {
+            banner.style.display = 'block';
+          }
+        }, 5000);
+      }
+    });
+
+    // Hide banner if app is installed
+    window.addEventListener('appinstalled', () => {
+      this._deferredPrompt = null;
+      const banner = document.getElementById('install-banner');
+      if (banner) banner.style.display = 'none';
+      this.showToast('DripDay installed! Open it from your home screen.', 'success');
+    });
+  },
+
+  async installApp() {
+    if (!this._deferredPrompt) {
+      // Fallback instructions for browsers without beforeinstallprompt
+      this.showToast('Open browser menu and tap "Add to Home Screen" to install', 'info');
+      return;
+    }
+
+    this._deferredPrompt.prompt();
+    const { outcome } = await this._deferredPrompt.userChoice;
+
+    if (outcome === 'accepted') {
+      this.showToast('Installing DripDay...', 'success');
+    }
+
+    this._deferredPrompt = null;
+    const banner = document.getElementById('install-banner');
+    if (banner) banner.style.display = 'none';
+  },
+
+  dismissInstall() {
+    this._installDismissed = true;
+    const banner = document.getElementById('install-banner');
+    if (banner) banner.style.display = 'none';
   },
 
   checkAuth() {
@@ -408,17 +493,9 @@ const App = {
     document.querySelectorAll('.nav-item').forEach(item => {
       item.addEventListener('click', () => {
         const view = item.dataset.view;
-        if (view) this.navigate(view);
+        if (view && view !== 'settings') this.navigate(view);
       });
     });
-
-    // Logo click
-    const logoEl = document.querySelector('.logo');
-    if (logoEl) {
-      logoEl.addEventListener('click', () => {
-        this.navigate(Store.isLoggedIn() ? 'home' : 'landing');
-      });
-    }
 
     // Scroll effects
     window.addEventListener('scroll', () => {
@@ -426,7 +503,7 @@ const App = {
       if (header) {
         header.classList.toggle('scrolled', window.scrollY > 20);
       }
-    });
+    }, { passive: true });
   },
 
   navigate(view) {
@@ -448,7 +525,7 @@ const App = {
 
     this.currentView = view;
 
-    // Show/hide bottom nav (hidden on landing and onboarding)
+    // Show/hide bottom nav
     const bottomNav = document.querySelector('.bottom-nav');
     if (bottomNav) {
       if (view === 'landing' || view === 'onboarding') {
@@ -456,6 +533,12 @@ const App = {
       } else {
         bottomNav.classList.add('visible');
       }
+    }
+
+    // Show/hide header actions on landing
+    const headerActions = document.querySelector('.header-actions');
+    if (headerActions) {
+      headerActions.style.display = (view === 'landing' || view === 'onboarding') ? 'none' : 'flex';
     }
 
     // View-specific initialization
@@ -469,7 +552,7 @@ const App = {
     }
 
     // Scroll to top
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: 'instant' });
   },
 
   // ===== DEMO DATA =====
@@ -489,7 +572,6 @@ const App = {
       { name: 'Running Shoes', category: 'shoes', color: 'black', formality: 'casual', tags: ['sporty', 'athletic', 'comfortable'] },
     ];
 
-    // Create simple colored placeholder images
     const colorBgs = {
       'navy': '#2a4365', 'white': '#f5f5f5', 'black': '#1a1a1a', 'denim': '#4a6fa5',
       'olive': '#6b8e23', 'gray': '#718096', 'cream': '#f5f0e1', 'khaki': '#b8a960',
@@ -554,10 +636,10 @@ const App = {
     const firstName = profile.name ? profile.name.split(' ')[0] : 'there';
 
     homeContent.innerHTML = `
-      <div class="landing-hero">
+      <div class="landing-hero" style="min-height: auto; padding-top: 0; padding-bottom: 40px;">
         <div class="hero-badge">${Icons.sun} Good ${this.getTimeOfDay()}, ${firstName}</div>
-        <h1 class="hero-title">What are you<br><span class="highlight">wearing today?</span></h1>
-        <p class="hero-subtitle">Let your AI stylist pick the perfect outfit from your wardrobe. Just tell us where you're going.</p>
+        <h1 class="home-title">What are you<br><span class="highlight">wearing today?</span></h1>
+        <p class="home-subtitle">Let your AI stylist pick the perfect outfit from your wardrobe. Just tell us where you're going.</p>
         <div class="hero-actions">
           <button class="btn btn-primary btn-lg" onclick="App.navigate('recommend')">
             ${Icons.sparkles} Get Recommendation
@@ -595,7 +677,7 @@ const App = {
       </div>
 
       ${wardrobe.length === 0 ? `
-        <div class="empty-state" style="padding: 0 20px 100px;">
+        <div class="empty-state" style="padding: 0 20px 40px;">
           <div style="max-width:400px; margin:0 auto;">
             ${Icons.shirt}
             <h3>Build your wardrobe first</h3>
@@ -606,7 +688,7 @@ const App = {
           </div>
         </div>
       ` : `
-        <section class="landing-features" style="padding-bottom: 100px;">
+        <section class="landing-features" style="padding-bottom: 40px; padding-top: 0;">
           <h2 class="section-title">Quick Actions</h2>
           <div class="features-grid">
             <div class="feature-card" onclick="App.navigate('recommend')" style="cursor:pointer;">
@@ -656,7 +738,7 @@ const App = {
     const content = document.getElementById('wardrobe-content');
 
     content.innerHTML = `
-      <div class="wardrobe-section" style="padding-top: 80px;">
+      <div class="wardrobe-section">
         <div class="wardrobe-header">
           <div>
             <h1 class="page-title">My Wardrobe</h1>
@@ -746,7 +828,6 @@ const App = {
     modal.classList.add('active');
     this.uploadImageData = null;
 
-    // Reset form
     document.getElementById('upload-preview').style.display = 'none';
     document.getElementById('upload-preview').src = '';
     document.getElementById('upload-file').value = '';
@@ -848,7 +929,6 @@ const App = {
       return;
     }
 
-    // Reset chat state
     this.chatMessages = [];
     this.currentOccasion = null;
     this.currentWeather = null;
@@ -886,7 +966,6 @@ const App = {
       </div>
     `;
 
-    // Add initial AI message
     this.addChatMessage('ai', "Hey! I'm your DripDay stylist. Where are you headed today? Tell me the occasion and I'll put together the perfect outfit from your wardrobe.");
   },
 
@@ -909,23 +988,18 @@ const App = {
 
     input.value = '';
 
-    // Add user message
     this.addChatMessage('user', text);
 
-    // Parse occasion from message if not already set
     if (!this.currentOccasion) {
       this.currentOccasion = this.parseOccasion(text);
     }
 
-    // Parse weather
     if (!this.currentWeather) {
       this.currentWeather = this.parseWeather(text);
     }
 
-    // Show typing indicator
     this.showTyping();
 
-    // Process after delay
     setTimeout(() => {
       this.removeTyping();
 
@@ -940,7 +1014,6 @@ const App = {
         return;
       }
 
-      // We have all the info - generate recommendation
       this.generateAndShowOutfit();
 
     }, 1000 + Math.random() * 800);
@@ -970,9 +1043,9 @@ const App = {
 
   parseWeather(text) {
     const lower = text.toLowerCase();
-    if (['hot', 'sunny', 'scorching', 'boiling', 'humid', 'warm', 'heat'].some(w => lower.includes(w))) return 'hot';
     if (['rain', 'rainy', 'raining', 'drizzle', 'storm', 'wet', 'downpour'].some(w => lower.includes(w))) return 'rainy';
     if (['cold', 'freezing', 'chilly', 'frost', 'winter'].some(w => lower.includes(w))) return 'cold';
+    if (['hot', 'sunny', 'scorching', 'boiling', 'humid'].some(w => lower.includes(w))) return 'hot';
     if (['cool', 'breezy', 'mild', 'moderate', 'comfortable'].some(w => lower.includes(w))) return 'cool';
     if (['warm', 'nice', 'pleasant'].some(w => lower.includes(w))) return 'warm';
     return 'mild';
@@ -1032,10 +1105,8 @@ const App = {
         return;
       }
 
-      // Show outfit result
       this.showOutfitResult(result);
 
-      // Save to history
       Store.history = [...Store.history, {
         id: 'h_' + Date.now(),
         occasion: this.currentOccasion,
@@ -1123,142 +1194,85 @@ const App = {
   // ===== ONBOARDING =====
   renderOnboarding() {
     const content = document.getElementById('onboarding-content');
-    let currentStep = 0;
-    const steps = ['name', 'style', 'wardrobe-intro'];
-
-    const renderStep = (step) => {
-      switch(step) {
-        case 0:
-          content.innerHTML = `
-            <div class="onboarding-page">
-              <div class="onboarding-progress">
-                <div class="progress-dot active"></div>
-                <div class="progress-dot"></div>
-                <div class="progress-dot"></div>
-              </div>
-
-              <div class="onboarding-step active">
-                <div style="margin-bottom: 32px;">
-                  <div style="width: 72px; height: 72px; background: var(--lime-dim); border-radius: 20px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
-                    ${Icons.user}
-                  </div>
-                </div>
-
-                <h1 class="onboarding-title">What's your name?</h1>
-                <p class="onboarding-subtitle">Let's personalize your DripDay experience</p>
-
-                <div class="form-group">
-                  <label class="form-label">Your Name</label>
-                  <input type="text" class="form-input" id="profile-name" placeholder="e.g. Tresha" autocomplete="name">
-                </div>
-
-                <div class="form-group">
-                  <label class="form-label">Style Preference</label>
-                  <select class="form-select" id="profile-style">
-                    <option value="casual">Casual & Comfortable</option>
-                    <option value="smart-casual">Smart Casual</option>
-                    <option value="formal">Formal & Professional</option>
-                    <option value="trendy">Trendy & Bold</option>
-                    <option value="minimalist">Clean & Minimalist</option>
-                    <option value="eclectic">Eclectic & Creative</option>
-                  </select>
-                </div>
-
-                <div class="form-group">
-                  <label class="form-label">Gender</label>
-                  <select class="form-select" id="profile-gender">
-                    <option value="male">Male</option>
-                    <option value="female">Female</option>
-                    <option value="non-binary">Non-binary</option>
-                    <option value="prefer-not">Prefer not to say</option>
-                  </select>
-                </div>
-
-                <div class="onboarding-footer">
-                  <button class="btn btn-primary btn-full" onclick="App.onboardingNext(1)">
-                    Continue ${Icons.arrowRight}
-                  </button>
-                </div>
-              </div>
-            </div>
-          `;
-          break;
-
-        case 1:
-          content.innerHTML = `
-            <div class="onboarding-page">
-              <div class="onboarding-progress">
-                <div class="progress-dot completed"></div>
-                <div class="progress-dot active"></div>
-                <div class="progress-dot"></div>
-              </div>
-
-              <div class="onboarding-step active">
-                <div style="margin-bottom: 32px;">
-                  <div style="width: 72px; height: 72px; background: var(--lime-dim); border-radius: 20px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
-                    ${Icons.shirt}
-                  </div>
-                </div>
-
-                <h1 class="onboarding-title">Add your wardrobe</h1>
-                <p class="onboarding-subtitle">Upload the clothes you own so the AI can recommend outfits from your actual closet</p>
-
-                <div style="margin: 24px 0;">
-                  <div class="upload-zone" id="onboarding-upload-zone"
-                    onclick="document.getElementById('onboarding-file').click()"
-                    ondragover="event.preventDefault(); this.classList.add('drag-over')"
-                    ondragleave="this.classList.remove('drag-over')"
-                    ondrop="App.handleOnboardingDrop(event)">
-                    ${Icons.upload}
-                    <p>Tap to upload or drag & drop</p>
-                    <p class="upload-hint">JPG, PNG up to 5MB</p>
-                    <input type="file" id="onboarding-file" accept="image/*" style="display:none" onchange="App.handleOnboardingUpload(event)" multiple>
-                  </div>
-
-                  <div id="onboarding-previews" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px;"></div>
-                </div>
-
-                <p style="font-size: 0.8rem; color: var(--gray-6); text-align: center; margin-bottom: 20px;">
-                  You can add more clothes later. ${this.onboardingImages ? this.onboardingImages.length : 0} items added so far.
-                </p>
-
-                <div class="onboarding-footer">
-                  <button class="btn btn-ghost btn-full" onclick="App.completeOnboarding()" style="margin-bottom: 8px;">
-                    Skip for now
-                  </button>
-                  <button class="btn btn-primary btn-full" onclick="App.completeOnboarding()">
-                    Start DripDay ${Icons.arrowRight}
-                  </button>
-                </div>
-              </div>
-            </div>
-          `;
-          break;
-      }
-    };
-
-    this.onboardingImages = this.onboardingImages || [];
-    renderStep(currentStep);
+    this.onboardingImages = [];
+    this.onboardingStep = 0;
+    this._onboardingName = '';
+    this._onboardingStyle = '';
+    this._onboardingGender = '';
+    this.renderOnboardingStep0(content);
   },
 
-  onboardingNext(step) {
-    if (step === 1) {
-      const name = document.getElementById('profile-name')?.value.trim();
-      if (!name) {
-        this.showToast('Please enter your name', 'error');
-        return;
-      }
-      // Save onboarding data before transitioning steps
-      this._onboardingName = name;
-      this._onboardingStyle = document.getElementById('profile-style')?.value || 'casual';
-      this._onboardingGender = document.getElementById('profile-gender')?.value || 'prefer-not';
+  renderOnboardingStep0(content) {
+    content.innerHTML = `
+      <div class="onboarding-page">
+        <div class="onboarding-progress">
+          <div class="progress-dot active"></div>
+          <div class="progress-dot"></div>
+        </div>
+
+        <div class="onboarding-step active">
+          <div style="margin-bottom: 32px;">
+            <div style="width: 72px; height: 72px; background: var(--lime-dim); border-radius: 20px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
+              ${Icons.user}
+            </div>
+          </div>
+
+          <h1 class="onboarding-title">What's your name?</h1>
+          <p class="onboarding-subtitle">Let's personalize your DripDay experience</p>
+
+          <div class="form-group">
+            <label class="form-label">Your Name</label>
+            <input type="text" class="form-input" id="profile-name" placeholder="e.g. Tresha" autocomplete="name">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Style Preference</label>
+            <select class="form-select" id="profile-style">
+              <option value="casual">Casual & Comfortable</option>
+              <option value="smart-casual">Smart Casual</option>
+              <option value="formal">Formal & Professional</option>
+              <option value="trendy">Trendy & Bold</option>
+              <option value="minimalist">Clean & Minimalist</option>
+              <option value="eclectic">Eclectic & Creative</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Gender</label>
+            <select class="form-select" id="profile-gender">
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+              <option value="non-binary">Non-binary</option>
+              <option value="prefer-not">Prefer not to say</option>
+            </select>
+          </div>
+
+          <div class="onboarding-footer">
+            <button class="btn btn-primary btn-full" onclick="App.onboardingNext()">
+              Continue ${Icons.arrowRight}
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+  },
+
+  onboardingNext() {
+    const name = document.getElementById('profile-name')?.value.trim();
+    if (!name) {
+      this.showToast('Please enter your name', 'error');
+      return;
     }
+
+    // Save data before transitioning
+    this._onboardingName = name;
+    this._onboardingStyle = document.getElementById('profile-style')?.value || 'casual';
+    this._onboardingGender = document.getElementById('profile-gender')?.value || 'prefer-not';
     this.onboardingStep = 1;
+
     const content = document.getElementById('onboarding-content');
     this.renderOnboardingStep1(content);
   },
-
-  onboardingStep: 0,
 
   renderOnboardingStep1(content) {
     content.innerHTML = `
@@ -1266,7 +1280,6 @@ const App = {
         <div class="onboarding-progress">
           <div class="progress-dot completed"></div>
           <div class="progress-dot active"></div>
-          <div class="progress-dot"></div>
         </div>
 
         <div class="onboarding-step active">
@@ -1295,7 +1308,7 @@ const App = {
           </div>
 
           <p style="font-size: 0.8rem; color: var(--gray-6); text-align: center; margin-bottom: 20px;">
-            You can add more clothes later. <span id="ob-count">${this.onboardingImages ? this.onboardingImages.length : 0}</span> items added so far.
+            You can add more clothes later. <span id="ob-count">${this.onboardingImages.length}</span> items added so far.
           </p>
 
           <div class="onboarding-footer">
@@ -1323,8 +1336,6 @@ const App = {
   },
 
   processOnboardingFiles(files) {
-    this.onboardingImages = this.onboardingImages || [];
-
     files.forEach(file => {
       const reader = new FileReader();
       reader.onload = (ev) => {
@@ -1347,10 +1358,9 @@ const App = {
   },
 
   completeOnboarding() {
-    // Read from saved onboarding data since the DOM may have changed steps
-    const name = this._onboardingName || document.getElementById('profile-name')?.value.trim() || 'Style Lover';
-    const style = this._onboardingStyle || document.getElementById('profile-style')?.value || 'casual';
-    const gender = this._onboardingGender || document.getElementById('profile-gender')?.value || 'prefer-not';
+    const name = this._onboardingName || 'Style Lover';
+    const style = this._onboardingStyle || 'casual';
+    const gender = this._onboardingGender || 'prefer-not';
 
     Store.profile = {
       name,
@@ -1395,9 +1405,10 @@ const App = {
     }
 
     const initials = profile.name ? profile.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) : 'DD';
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
 
     content.innerHTML = `
-      <div class="profile-section" style="padding-top: 80px;">
+      <div class="profile-section">
         <div class="profile-header">
           <div class="profile-avatar">${initials}</div>
           <div class="profile-info">
@@ -1449,6 +1460,18 @@ const App = {
           </button>
         </div>
 
+        ${!isStandalone ? `
+        <div class="card" style="margin-bottom: 16px; cursor: pointer;" onclick="App.installApp()">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              ${Icons.download}
+              <span style="font-weight: 600;">Install App</span>
+            </div>
+            ${Icons.chevronRight}
+          </div>
+        </div>
+        ` : ''}
+
         <div class="card" style="margin-bottom: 16px; cursor: pointer;" onclick="App.navigate('wardrobe')">
           <div style="display: flex; justify-content: space-between; align-items: center;">
             <div style="display: flex; align-items: center; gap: 12px;">
@@ -1474,7 +1497,7 @@ const App = {
         </button>
 
         <p style="text-align: center; color: var(--gray-5); font-size: 0.75rem; margin-top: 24px;">
-          DripDay v1.0 &middot; Made for Zambia, built for Africa
+          DripDay v2.0 &middot; Made for Zambia, built for Africa
         </p>
       </div>
     `;
@@ -1500,14 +1523,6 @@ const App = {
       this.showToast('No outfit history yet. Get some recommendations first!', 'info');
       return;
     }
-
-    // Show history in a simple way for now
-    let msg = 'Your past outfits:\n\n';
-    history.slice(-5).reverse().forEach((h, i) => {
-      const occasion = Occasions.find(o => o.id === h.occasion)?.label || 'Special';
-      const date = new Date(h.date).toLocaleDateString();
-      msg += `${i + 1}. ${occasion} - Drip Score: ${h.score} (${date})\n`;
-    });
 
     this.showToast(`You have ${history.length} saved outfit(s)`, 'info');
   },
