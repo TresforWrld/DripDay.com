@@ -1,4 +1,4 @@
- /* ===== ROOT VARIABLES ===== */
+/* ===== ROOT VARIABLES ===== */
 :root {
   --lime: #a3ff00;
   --lime-dim: rgba(163, 255, 0, 0.15);
@@ -30,7 +30,7 @@
   --transition-spring: 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
   --font-main: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
   --font-display: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
-  --header-height: 84px;  /* ⬆️ Increased from 60px to fit the 2x larger logo */
+  --header-height: 60px;       /* unchanged – original slim header */
   --bottom-nav-height: 72px;
 }
 
@@ -141,6 +141,7 @@ ul, ol { list-style: none; }
   -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid rgba(255,255,255,0.06);
   transition: all var(--transition-smooth);
+  overflow: visible;           /* ⬅️ allow larger logo to breathe */
 }
 
 .app-header.scrolled {
@@ -158,7 +159,7 @@ ul, ol { list-style: none; }
   margin: 0 auto;
 }
 
- /* ===== LOGO ===== */
+/* ===== LOGO ===== */
 .logo {
   display: flex;
   align-items: center;
@@ -171,14 +172,15 @@ ul, ol { list-style: none; }
 .logo:active { transform: scale(0.95); }
 
 .logo-img {
-  height: 76px;  /* ⬆️ Doubled from 38px */
+  height: 76px;                /* ⬅️ doubled from 38px */
   width: auto;
   border-radius: 8px;
   object-fit: contain;
+  margin: -8px 0;              /* ⬅️ vertical centering inside 60px header */
 }
 
 .logo-img-footer {
-  height: 64px;  /* ⬆️ Doubled from 32px for consistency */
+  height: 64px;                /* ⬅️ doubled from 32px */
   opacity: 0.8;
 }
 
