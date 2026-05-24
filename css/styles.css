@@ -1,4 +1,4 @@
-/* ===== ROOT VARIABLES ===== */
+ /* ===== ROOT VARIABLES ===== */
 :root {
   --lime: #a3ff00;
   --lime-dim: rgba(163, 255, 0, 0.15);
@@ -30,7 +30,7 @@
   --transition-spring: 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
   --font-main: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
   --font-display: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
-  --header-height: 60px;
+  --header-height: 84px;  /* ⬆️ Increased from 60px to fit the 2x larger logo */
   --bottom-nav-height: 72px;
 }
 
@@ -158,11 +158,11 @@ ul, ol { list-style: none; }
   margin: 0 auto;
 }
 
-/* ===== LOGO ===== */
+ /* ===== LOGO ===== */
 .logo {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 10px;
   cursor: pointer;
   transition: transform var(--transition-spring);
   text-decoration: none;
@@ -171,14 +171,14 @@ ul, ol { list-style: none; }
 .logo:active { transform: scale(0.95); }
 
 .logo-img {
-  height: 60px;
+  height: 76px;  /* ⬆️ Doubled from 38px */
   width: auto;
-  border-radius: 15px;
+  border-radius: 8px;
   object-fit: contain;
 }
 
 .logo-img-footer {
-  height: 58px;
+  height: 64px;  /* ⬆️ Doubled from 32px for consistency */
   opacity: 0.8;
 }
 
@@ -190,8 +190,8 @@ ul, ol { list-style: none; }
 }
 
 .icon-btn {
-  width: 80px;
-  height: 80px;
+  width: 40px;
+  height: 40px;
   border-radius: var(--radius-md);
   background: var(--gray-2);
   display: flex;
