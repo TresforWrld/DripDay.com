@@ -162,7 +162,7 @@ ul, ol { list-style: none; }
 .logo {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 20px;
   cursor: pointer;
   transition: transform var(--transition-spring);
   text-decoration: none;
